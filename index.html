@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery with Draggable Text</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+
+        .gallery-section {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+        
+        }
+
+        .controls-section {
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .swiper {
+            width: 100%;
+            height: 600px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .swiper-slide {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .draggable-text {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            max-width: 80%;
+            word-wrap: break-word;
+            z-index: 10;
+        }
+
+        .draggable-text.active {
+            outline: 2px dashed #ffcc00;
+        }
+
+        .swiper-button-next, .swiper-button-prev {
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .swiper-button-next:after, .swiper-button-prev:after {
+            font-size: 20px;
+        }
+
+        .swiper-pagination-bullet {
+            background: white;
+            opacity: 0.7;
+        }
+
+        .swiper-pagination-bullet-active {
+            background: #ffcc00;
+            opacity: 1;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #ffcc00;
+            color: #333;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #ffd633;
+            transform: translateY(-2px);
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .color-option.active {
+            border-color: white;
+            transform: scale(1.2);
+        }
+
+        .text-preview {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .gallery-section, .controls-section {
+                max-width: 100%;
+            }
+            
+            .swiper {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+
+        <div class="content">
+            <div class="gallery-section">
+                <h2 class="section-title">Image Gallery</h2>
+                <div class="swiper">
+                    <div class="swiper-wrapper">
+                   
+                        <div class="swiper-slide" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80')">
+                            <div class="slide-content">
+                                <div class="draggable-text" style="top: 20%; left: 10%;">Beautiful Mountains</div>
+                                <div class="draggable-text" style="top: 70%; left: 60%;">Nature's Wonder</div>
+                            </div>
+                        </div>
+                   
+                        <div class="swiper-slide" style="background-image: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80')">
+                            <div class="slide-content">
+                                <div class="draggable-text" style="top: 15%; left: 50%;">Ocean View</div>
+                                <div class="draggable-text" style="top: 80%; left: 20%;">Peaceful Beach</div>
+                            </div>
+                        </div>
+                        
+                        <div class="swiper-slide" style="background-image: url('https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2350&q=80')">
+                            <div class="slide-content">
+                                <div class="draggable-text" style="top: 30%; left: 30%;">Forest Path</div>
+                                <div class="draggable-text" style="top: 70%; left: 70%;">Green Paradise</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                   
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <h2 class="section-title">Text Controls</h2>
+                
+                <div class="control-group">
+                    <label class="control-label">Font Family</label>
+                    <select id="fontFamily">
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="'Times New Roman', serif">Times New Roman</option>
+                        <option value="'Courier New', monospace">Courier New</option>
+                        <option value="'Georgia', serif">Georgia</option>
+                        <option value="'Verdana', sans-serif">Verdana</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Font Size</label>
+                    <input type="range" id="fontSize" min="12" max="72" value="24">
+                    <span id="fontSizeValue">24px</span>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Text Color</label>
+                    <div class="color-picker">
+                        <div class="color-option active" style="background-color: #ffffff;" data-color="#ffffff"></div>
+                        <div class="color-option" style="background-color: #ffcc00;" data-color="#ffcc00"></div>
+                        <div class="color-option" style="background-color: #ff6b6b;" data-color="#ff6b6b"></div>
+                        <div class="color-option" style="background-color: #4ecdc4;" data-color="#4ecdc4"></div>
+                        <div class="color-option" style="background-color: #45b7d1;" data-color="#45b7d1"></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Text Alignment</label>
+                    <select id="textAlignment">
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                        <option value="justify">Justify</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Custom Text</label>
+                    <input type="text" id="customText" placeholder="Enter your text here">
+                    <button id="updateText">Update Text</button>
+                </div>
+
+                <div class="control-group">
+                    <button id="addText">Add New Text</button>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Text Preview</label>
+                    <div class="text-preview" id="textPreview">
+                        Sample Text Preview
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Drag text elements to reposition them on the images</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+      
+        const swiper = new Swiper('.swiper', {
+            direction: 'horizontal',
+            loop: true,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+
+        
+        let activeTextElement = null;
+        let offsetX, offsetY;
+
+        document.querySelectorAll('.draggable-text').forEach(textElement => {
+            textElement.addEventListener('mousedown', startDrag);
+            textElement.addEventListener('touchstart', startDragTouch);
+        });
+
+        function startDrag(e) {
+            activeTextElement = e.target;
+            const rect = activeTextElement.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+            
+           
+            document.querySelectorAll('.draggable-text').forEach(el => el.classList.remove('active'));
+            activeTextElement.classList.add('active');
+            
+            e.preventDefault();
+        }
+
+        function startDragTouch(e) {
+            activeTextElement = e.target;
+            const touch = e.touches[0];
+            const rect = activeTextElement.getBoundingClientRect();
+            offsetX = touch.clientX - rect.left;
+            offsetY = touch.clientY - rect.top;
+            
+            document.addEventListener('touchmove', onDragTouch);
+            document.addEventListener('touchend', stopDrag);
+            
+            
+            document.querySelectorAll('.draggable-text').forEach(el => el.classList.remove('active'));
+            activeTextElement.classList.add('active');
+            
+            e.preventDefault();
+        }
+
+        function onDrag(e) {
+            if (!activeTextElement) return;
+            
+            const slideRect = activeTextElement.closest('.slide-content').getBoundingClientRect();
+            const textRect = activeTextElement.getBoundingClientRect();
+            
+            let x = e.clientX - slideRect.left - offsetX;
+            let y = e.clientY - slideRect.top - offsetY;
+            
+           
+            x = Math.max(0, Math.min(x, slideRect.width - textRect.width));
+            y = Math.max(0, Math.min(y, slideRect.height - textRect.height));
+            
+            activeTextElement.style.left = `${x}px`;
+            activeTextElement.style.top = `${y}px`;
+        }
+
+        function onDragTouch(e) {
+            if (!activeTextElement) return;
+            
+            const touch = e.touches[0];
+            const slideRect = activeTextElement.closest('.slide-content').getBoundingClientRect();
+            const textRect = activeTextElement.getBoundingClientRect();
+            
+            let x = touch.clientX - slideRect.left - offsetX;
+            let y = touch.clientY - slideRect.top - offsetY;
+            
+          
+            x = Math.max(0, Math.min(x, slideRect.width - textRect.width));
+            y = Math.max(0, Math.min(y, slideRect.height - textRect.height));
+            
+            activeTextElement.style.left = `${x}px`;
+            activeTextElement.style.top = `${y}px`;
+        }
+
+        function stopDrag() {
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('touchmove', onDragTouch);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchend', stopDrag);
+            
+            if (activeTextElement) {
+                activeTextElement.classList.remove('active');
+                activeTextElement = null;
+            }
+        }
+
+      
+        const fontFamilySelect = document.getElementById('fontFamily');
+        const fontSizeSlider = document.getElementById('fontSize');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const colorOptions = document.querySelectorAll('.color-option');
+        const textAlignmentSelect = document.getElementById('textAlignment');
+        const customTextInput = document.getElementById('customText');
+        const updateTextButton = document.getElementById('updateText');
+        const addTextButton = document.getElementById('addText');
+        const textPreview = document.getElementById('textPreview');
+
+      
+        fontFamilySelect.addEventListener('change', function() {
+            if (activeTextElement) {
+                activeTextElement.style.fontFamily = this.value;
+            }
+            textPreview.style.fontFamily = this.value;
+        });
+
+       
+        fontSizeSlider.addEventListener('input', function() {
+            fontSizeValue.textContent = `${this.value}px`;
+            if (activeTextElement) {
+                activeTextElement.style.fontSize = `${this.value}px`;
+            }
+            textPreview.style.fontSize = `${this.value}px`;
+        });
+
+       
+        colorOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                colorOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                const color = this.getAttribute('data-color');
+                if (activeTextElement) {
+                    activeTextElement.style.color = color;
+                }
+                textPreview.style.color = color;
+            });
+        });
+
+      
+        textAlignmentSelect.addEventListener('change', function() {
+            if (activeTextElement) {
+                activeTextElement.style.textAlign = this.value;
+            }
+            textPreview.style.textAlign = this.value;
+        });
+
+    
+        updateTextButton.addEventListener('click', function() {
+            if (activeTextElement && customTextInput.value.trim() !== '') {
+                activeTextElement.textContent = customTextInput.value;
+                textPreview.textContent = customTextInput.value;
+            }
+        });
+
+        
+        addTextButton.addEventListener('click', function() {
+            const activeSlide = document.querySelector('.swiper-slide-active .slide-content');
+            if (activeSlide) {
+                const newText = document.createElement('div');
+                newText.className = 'draggable-text';
+                newText.textContent = 'New Text';
+                newText.style.top = '50%';
+                newText.style.left = '50%';
+                newText.style.transform = 'translate(-50%, -50%)';
+                newText.style.fontFamily = fontFamilySelect.value;
+                newText.style.fontSize = `${fontSizeSlider.value}px`;
+                newText.style.color = document.querySelector('.color-option.active').getAttribute('data-color');
+                newText.style.textAlign = textAlignmentSelect.value;
+                
+                newText.addEventListener('mousedown', startDrag);
+                newText.addEventListener('touchstart', startDragTouch);
+                
+                activeSlide.appendChild(newText);
+                
+                
+                textPreview.textContent = 'New Text';
+            }
+        });
+
+        
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('draggable-text')) {
+                document.querySelectorAll('.draggable-text').forEach(el => el.classList.remove('active'));
+                e.target.classList.add('active');
+                activeTextElement = e.target;
+                
+               
+                fontFamilySelect.value = getComputedStyle(activeTextElement).fontFamily;
+                fontSizeSlider.value = parseInt(getComputedStyle(activeTextElement).fontSize);
+                fontSizeValue.textContent = `${fontSizeSlider.value}px`;
+                textAlignmentSelect.value = getComputedStyle(activeTextElement).textAlign;
+                customTextInput.value = activeTextElement.textContent;
+                
+            
+                textPreview.textContent = activeTextElement.textContent;
+                textPreview.style.fontFamily = getComputedStyle(activeTextElement).fontFamily;
+                textPreview.style.fontSize = getComputedStyle(activeTextElement).fontSize;
+                textPreview.style.color = getComputedStyle(activeTextElement).color;
+                textPreview.style.textAlign = getComputedStyle(activeTextElement).textAlign;
+            }
+        });
+    </script>
+</body>
+</html>
